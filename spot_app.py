@@ -3,7 +3,7 @@ import streamlit as st
 import requests
 API_KEY = "YOUR_WORLD_TIDES_API_KEY"
 
-st.title("釣り場ツール（テスト版）")
+st.title("釣り場ツール（テスト版A）")
 
 # -------- 入力エリア --------
 st.header("条件の入力")
