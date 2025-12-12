@@ -52,7 +52,11 @@ def _parse_time(raw: str) -> str:
         return ""
     # 桁不足や過剰を防ぐために 4 桁へゼロ埋め＋切り詰め
     digits = digits.zfill(4)[:4]
-    return f"{digits[:2]}:{digits[2:]}"
+    hh, mm = int(digits[:2]), int(digits[2:])
+    # 時刻として不正（例: 24時以上、分が60以上）の場合は無視
+    if hh >= 24 or mm >= 60:
+        return ""
+    return f"{hh:02d}:{mm:02d}"
 
 
 def _parse_height(raw: str) -> int:
