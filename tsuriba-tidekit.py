@@ -50,6 +50,8 @@ def _parse_time(raw: str) -> str:
     digits = "".join(ch if ch.isdigit() else "0" for ch in raw)
     if digits == "9999":
         return ""
+    # 桁不足や過剰を防ぐために 4 桁へゼロ埋め＋切り詰め
+    digits = digits.zfill(4)[:4]
     return f"{digits[:2]}:{digits[2:]}"
 
 
@@ -208,12 +210,22 @@ if st.button("検索"):
     layers = [line]
     if extremes:
         extremes_df = pd.DataFrame(extremes)
-        extremes_df["時刻"] = extremes_df["時刻"].apply(
-            lambda t: datetime.combine(
-                selected_date,
-                datetime.strptime(t, "%H:%M").time(),
-            )
-        )
+
+        def _safe_to_datetime(t: str):
+            if not t:
+                return None
+            t = t.strip()
+            if len(t) > 5:
+                t = t[:5]  # 余分な桁があれば切り詰め
+            try:
+                tm = datetime.strptime(t, "%H:%M").time()
+                return datetime.combine(selected_date, tm)
+            except ValueError:
+                return None
+
+        extremes_df["時刻"] = extremes_df["時刻"].apply(_safe_to_datetime)
+        extremes_df = extremes_df.dropna(subset=["時刻"])
+
         scatter = (
             alt.Chart(extremes_df)
             .mark_point(filled=True, size=80, color="#d62728")
